@@ -237,9 +237,8 @@ function Index() {
             <div className="juntos" data-scroll>
               <article className="junto surge" style={vi(0)}>
                 <img src="/assets/icones/shopping.png" alt="" />
-                <span className="rot">Shoppings em 2025</span>
                 <div className="numero">R$ 200,9 bi</div>
-                <p>Faturamento recorde histórico dos shoppings.</p>
+                <p>Shoppings em 2025, recorde histórico.</p>
               </article>
               <article className="junto surge" style={vi(1)}>
                 <img src="/assets/icones/grafico.png" alt="" />
