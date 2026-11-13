@@ -21,3 +21,9 @@ Section plan (ordem e textos OBRIGATÓRIOS do documento CCME11_Pagina_AlwaysOn.d
 Asset plan: colagem hero, torre, skyline, textura planta, 9 ícones gerados, logo oficial Canuma (do site), OG 1200x630.
 CTA inventory (mesmo rótulo do documento, garments diferentes): hero bloco navy com seta deslizante · tese link sublinhado · performance bloco emoldurado · carteira botão azul com borda dupla · setores faixa banner · fluxo pill navy · diferenciais contorno branco · FAQ texto com seta. Destino de todos: a definir.
 Dados dos gráficos: informes mensais à CVM (cotistas e PL, abr/22 a set/26) e Relatório Mensal Out/26 (retorno desde o IPO).
+
+## v2 (14/11/2026): restyle a partir do modelo em vídeo enviado pelo Josué (LP KEEPIT)
+- Do modelo: hero com palavra gigante atrás do objeto, título em duas cores, botão pílula com seta em círculo, cards juntos que surgem na rolagem, faixa de fotos com setas, lista numerada + mão com celular, painel 2x2, círculo com seta passando para a área escura, carrossel com laterais desfocados, rodapé claro.
+- Da marca: paleta CCME11/Canuma (verde do modelo trocado por #3787BD/#DCEBFF e navy), Sora, logo oficial.
+- Tarja MATERIAL PUBLICITÁRIO no topo (padrão das LPs de FII; primeira linha do documento).
+- Hero: imagem cheia em camadas (céu, CCME11 gigante, prédios recortados) animada pela rolagem, sem vídeo.
