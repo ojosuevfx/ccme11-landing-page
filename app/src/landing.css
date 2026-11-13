@@ -23,7 +23,7 @@ html{scroll-behavior:smooth}
 /* tarja */
 .tarja{background:var(--tinta);color:#fff;text-align:center;font-family:var(--mono);font-size:11.5px;letter-spacing:.32em;font-weight:500;padding:9px 12px;position:relative;z-index:60}
 /* topo */
-.topo{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.72);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--linha)}
+.topo{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);border-bottom:1px solid var(--linha)}
 .topo .wrap{display:flex;align-items:center;justify-content:space-between;height:64px}
 .topo img{height:28px;width:auto}
 .topo-tk{font-family:var(--mono);font-size:12px;letter-spacing:.08em;color:var(--estrutura);border:1px solid rgba(13,35,63,.22);padding:8px 14px;border-radius:999px}
@@ -163,10 +163,10 @@ html{scroll-behavior:smooth}
 .c-card{flex:0 0 min(720px,88vw);scroll-snap-align:center;display:grid;grid-template-columns:.8fr 1.2fr;gap:28px;background:linear-gradient(135deg,#F4F9FE,#DCEBFF);color:var(--tinta);border-radius:22px;padding:14px;transition:filter .45s,opacity .45s,transform .45s}
 .c-card[data-ativo="false"]{filter:blur(4px);opacity:.42;transform:scale(.94)}
 @media (max-width:640px){.c-card{grid-template-columns:1fr}}
-.c-card img{width:100%;height:100%;min-height:240px;max-height:300px;object-fit:cover;border-radius:14px;display:block}
+.c-card>img{width:100%;height:100%;min-height:240px;max-height:300px;object-fit:cover;border-radius:14px;display:block}
 .c-corpo{padding:18px 18px 18px 0;display:flex;flex-direction:column;justify-content:center}
 @media (max-width:640px){.c-corpo{padding:6px 10px 14px}}
-.c-corpo .ic{width:40px;height:40px}
+.c-corpo .ic{width:40px;height:40px;display:block}
 .c-corpo h3{font-size:24px;letter-spacing:-.02em;margin:10px 0 4px}
 .c-corpo b{font-size:64px;letter-spacing:-.06em;line-height:1}
 .c-corpo .bar{height:10px;background:rgba(13,35,63,.1);border-radius:99px;margin:16px 0 10px;overflow:hidden}
