@@ -1,1 +1,4 @@
 node_modules
+
+# versão estática do GitHub Pages (vai para a branch gh-pages)
+app/pages-dist/

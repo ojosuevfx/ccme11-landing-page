@@ -49,7 +49,7 @@ const APP_HOST_ZONES = ["higgsfield.app", "higgsfield-dev.app"];
 
 function toOwnAssetUrl(value: string | null | undefined): string | null {
   if (!value) return null;
-  if (value.startsWith("/")) return value; // already root-relative
+  if (value.startsWith("/")) return import.meta.env.BASE_URL + value.slice(1); // relativo à base do site
   try {
     const u = new URL(value);
     const isAppHost = APP_HOST_ZONES.some(
@@ -95,7 +95,7 @@ function buildHead(meta: AppMeta) {
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" as const },
       { rel: "stylesheet", href: "https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Sora:wght@300;400;500;600;700;800&display=swap" },
       { rel: "stylesheet", href: appCss },
-      { rel: "apple-touch-icon", href: "/assets/apple-touch-icon.png" },
+      { rel: "apple-touch-icon", href: `${import.meta.env.BASE_URL}assets/apple-touch-icon.png` },
       ...(favicon ? [{ rel: "icon", href: favicon }] : []),
     ],
   };

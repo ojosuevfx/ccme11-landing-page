@@ -23,6 +23,8 @@ export default defineConfig(({ mode }) => {
   const designInspectorEnabled = process.env.HF_DESIGN_INSPECTOR === "1" || mode === "design";
 
   return {
+    // GH_PAGES_BASE=/ccme11-landing-page/ gera a versão do GitHub Pages; sem ela, a base é "/".
+    base: process.env.GH_PAGES_BASE ?? "/",
     resolve: {
       alias: [{ find: /^@higgsfield-ai\/icons(\/.*)?$/, replacement: QUANTA_ICONS_SHIM }],
     },

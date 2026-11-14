@@ -9,6 +9,9 @@ export const Route = createFileRoute("/")({
 const LINK = "#";
 const CTA = "Clique aqui para ter mais informações";
 const vi = (i: number) => ({ "--i": i }) as CSSProperties;
+// Base do endereço: "/" no Higgsfield, "/ccme11-landing-page/" no GitHub Pages.
+const BASE = import.meta.env.BASE_URL;
+const a = (p: string) => `${BASE}${p}`;
 
 // Informes mensais do CCME11 à CVM, de abr/2022 a set/2026 (54 meses).
 const INICIO = { ano: 2022, mes: 4 };
@@ -125,9 +128,9 @@ function CarrosselSetores() {
       <div className="c-pista" ref={pista}>
         {SETORES.map((s, i) => (
           <article className="c-card" key={s.nome} data-ativo={String(i === ativo)} aria-label={`${s.nome}: ${s.v}%`}>
-            <img src={`/assets/setor-${s.img}.webp`} alt="" loading="lazy" />
+            <img src={`${BASE}assets/setor-${s.img}.webp`} alt="" loading="lazy" />
             <div className="c-corpo">
-              <img className="ic" src={`/assets/icones/${s.ic}.png`} alt="" />
+              <img className="ic" src={`${BASE}assets/icones/${s.ic}.png`} alt="" />
               <h3>{s.nome}</h3>
               <b>{s.v}%</b>
               <div className="bar"><i style={{ width: `${Math.max((s.v / 55) * 100, 2)}%` }} /></div>
@@ -161,10 +164,10 @@ function TrilhoFotos() {
   return (
     <div className="trilho-wrap">
       <div className="trilho" ref={ref}>
-        <figure><img src="/assets/setor-residencial.webp" alt="Edifício residencial" loading="lazy" /><figcaption>Residencial</figcaption></figure>
-        <figure><img src="/assets/setor-shopping.webp" alt="Interior de shopping center" loading="lazy" /><figcaption>Shoppings</figcaption></figure>
-        <figure><img src="/assets/setor-escritorios.webp" alt="Torres de escritórios" loading="lazy" /><figcaption>Escritórios</figcaption></figure>
-        <figure><img src="/assets/setor-logistica.webp" alt="Galpão logístico" loading="lazy" /><figcaption>Logística</figcaption></figure>
+        <figure><img src={a("assets/setor-residencial.webp")} alt="Edifício residencial" loading="lazy" /><figcaption>Residencial</figcaption></figure>
+        <figure><img src={a("assets/setor-shopping.webp")} alt="Interior de shopping center" loading="lazy" /><figcaption>Shoppings</figcaption></figure>
+        <figure><img src={a("assets/setor-escritorios.webp")} alt="Torres de escritórios" loading="lazy" /><figcaption>Escritórios</figcaption></figure>
+        <figure><img src={a("assets/setor-logistica.webp")} alt="Galpão logístico" loading="lazy" /><figcaption>Logística</figcaption></figure>
       </div>
       <button className="seta-nav esq" type="button" onClick={() => mover(-1)} disabled={inicio} aria-label="Fotos anteriores">←</button>
       <button className="seta-nav dir" type="button" onClick={() => mover(1)} disabled={fim} aria-label="Próximas fotos">→</button>
@@ -195,7 +198,7 @@ function Navbar() {
     <header className="topo" data-aberto={aberto}>
       <div className="wrap">
         <a href="#abertura" className="topo-logo" aria-label="Canuma Capital, voltar ao início" onClick={() => setAberto(false)}>
-          <img src="/assets/logo-canuma.png" alt="" width={900} height={175} />
+          <img src={a("assets/logo-canuma.png")} alt="" width={900} height={175} />
         </a>
         <nav className="nav" id="menu-secoes" aria-label="Seções da página">
           {SECOES.map((s) => (
@@ -297,14 +300,14 @@ function Index() {
               <a className="b-hero" href={LINK} data-link="a definir">{CTA} <i aria-hidden="true">→</i></a>
             </div>
             <div className="letras" aria-hidden="true">CCME11</div>
-            <img className="predios" src="/assets/hero-predios.webp" alt="" width={1344} height={752} fetchPriority="high" />
+            <img className="predios" src={a("assets/hero-predios.webp")} alt="" width={1344} height={752} fetchPriority="high" />
           </div>
         </section>
         <div className="faixa">
           <ul>
-            <li><img src="/assets/icones/desconto.png" alt="" />Cota com cerca de 12% de desconto sobre o valor patrimonial</li>
-            <li><img src="/assets/icones/cotistas.png" alt="" />+9 mil cotistas na B3</li>
-            <li><img src="/assets/icones/cris.png" alt="" />22 CRIs em carteira, com setores diversificados</li>
+            <li><img src={a("assets/icones/desconto.png")} alt="" />Cota com cerca de 12% de desconto sobre o valor patrimonial</li>
+            <li><img src={a("assets/icones/cotistas.png")} alt="" />+9 mil cotistas na B3</li>
+            <li><img src={a("assets/icones/cris.png")} alt="" />22 CRIs em carteira, com setores diversificados</li>
           </ul>
         </div>
         <p className="aviso">Leia o regulamento do fundo antes de investir, especialmente os fatores de risco.</p>
@@ -321,17 +324,17 @@ function Index() {
             </div>
             <div className="juntos" data-scroll>
               <article className="junto surge" style={vi(0)}>
-                <img src="/assets/icones/shopping.png" alt="" />
+                <img src={a("assets/icones/shopping.png")} alt="" />
                 <div className="numero">R$ 200,9 bi</div>
                 <p>Shoppings em 2025, recorde histórico.</p>
               </article>
               <article className="junto surge" style={vi(1)}>
-                <img src="/assets/icones/grafico.png" alt="" />
+                <img src={a("assets/icones/grafico.png")} alt="" />
                 <h3>Adaptação ao ciclo de mercado</h3>
                 <p>Na gestão ativa, a Canuma Capital pode ajustar a carteira conforme cada fase do mercado imobiliário, combinando CRIs, imóveis, outros FIIs e, quando surgem oportunidades, ações de empresas do setor.</p>
               </article>
               <article className="junto surge" style={vi(2)}>
-                <img src="/assets/icones/cris.png" alt="" />
+                <img src={a("assets/icones/cris.png")} alt="" />
                 <h3>Sobre o CCME11</h3>
                 <p>O CCME11 é o Canuma Capital Multiestratégia, um FII gerido pela Canuma Capital, em operação desde 13 de abril de 2022. A tese diversifica as fontes de retorno entre crédito imobiliário, imóveis, outros fundos imobiliários e ações do segmento.</p>
               </article>
@@ -404,7 +407,7 @@ function Index() {
               </div>
               <div data-scroll>
                 <div className="mao">
-                  <img src="/assets/celular.webp" alt="" width={700} height={946} loading="lazy" />
+                  <img src={a("assets/celular.webp")} alt="" width={700} height={946} loading="lazy" />
                   <div className="tela" aria-hidden="true">
                     <span>RENDIMENTO MENSAL</span>
                     <b>0,086</b>
@@ -427,7 +430,7 @@ function Index() {
                 <div className="classes-cab"><span>CLASSE · PARTICIPAÇÃO</span><span>TAMANHO APROXIMADO</span></div>
                 {FATIAS.map((f, i) => (
                   <article className="classe surge" style={vi(i)} key={f.nome}>
-                    <img src={`/assets/icones/${f.ic}.png`} alt="" width={36} height={36} />
+                    <img src={`${BASE}assets/icones/${f.ic}.png`} alt="" width={36} height={36} />
                     <h3><span className="sw" style={{ background: f.c }} />{f.nome}</h3>
                     <b>{f.v}%</b>
                     <p>{f.tam}</p>
@@ -501,7 +504,7 @@ function Index() {
                   { ic: "reserva", t: "Reserva Acumulada", p: "Cerca de R$ 0,082 por cota." },
                 ].map((d, i) => (
                   <article className="dif surge" style={vi(i % 3)} key={d.t}>
-                    <img src={`/assets/icones/${d.ic}.png`} alt="" />
+                    <img src={`${BASE}assets/icones/${d.ic}.png`} alt="" />
                     <h3>{d.t}</h3>
                     <p>{d.p}</p>
                   </article>
@@ -547,7 +550,7 @@ function Index() {
       {/* DOBRA FINAL - DISCLAIMER E RODAPÉ */}
       <footer className="rodape">
         <div className="wrap">
-          <img src="/assets/logo-canuma.png" alt="Canuma Capital" width={900} height={175} />
+          <img src={a("assets/logo-canuma.png")} alt="Canuma Capital" width={900} height={175} />
           <p>Este material é meramente informativo e não constitui oferta, recomendação ou solicitação para aquisição de valores mobiliários. Rentabilidade passada não representa garantia de rentabilidade futura. O investimento em fundos imobiliários não conta com garantia do administrador, do gestor, de qualquer mecanismo de seguro ou do Fundo Garantidor de Créditos – FGC. Antes de investir, leia atentamente o regulamento e os documentos do fundo. Consulte sempre um assessor de investimentos antes de tomar qualquer decisão. Administração: BTG Pactual. Gestão: Canuma Capital.</p>
         </div>
       </footer>
