@@ -28,7 +28,20 @@ bun install
 bun run dev
 ```
 
-## Publicar uma alteração
+## GitHub Pages
+
+Versão pública: https://ojosuevfx.github.io/ccme11-landing-page/ (servida pela branch `gh-pages`).
+
+Para atualizar depois de uma mudança:
+
+```bash
+cd app
+node scripts/gerar-pages.mjs     # gera app/pages-dist com a base /ccme11-landing-page/
+```
+
+Depois envie o conteúdo de `app/pages-dist/` para a branch `gh-pages` (substituindo tudo).
+
+## Publicar uma alteração no Higgsfield
 
 O deploy é feito pelo Higgsfield, a partir do repositório dele. Depois de alterar aqui, as mudanças precisam ser levadas para o projeto `ccme11-alwayson` no Higgsfield e publicadas de novo (o Claude faz isso).
 
