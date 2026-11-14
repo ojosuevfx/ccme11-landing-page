@@ -172,6 +172,45 @@ function TrilhoFotos() {
   );
 }
 
+// Uma âncora para cada dobra do documento (a abertura é o próprio logo).
+const SECOES = [
+  { id: "tese", nome: "A tese" },
+  { id: "performance", nome: "Performance" },
+  { id: "carteira", nome: "Carteira" },
+  { id: "setores", nome: "Setores" },
+  { id: "como-funciona", nome: "Como funciona" },
+  { id: "diferenciais", nome: "Diferenciais" },
+  { id: "faq", nome: "Perguntas" },
+];
+
+function Navbar() {
+  const [aberto, setAberto] = useState(false);
+  useEffect(() => {
+    if (!aberto) return;
+    const esc = (e: KeyboardEvent) => { if (e.key === "Escape") setAberto(false); };
+    window.addEventListener("keydown", esc);
+    return () => window.removeEventListener("keydown", esc);
+  }, [aberto]);
+  return (
+    <header className="topo" data-aberto={aberto}>
+      <div className="wrap">
+        <a href="#abertura" className="topo-logo" aria-label="Canuma Capital, voltar ao início" onClick={() => setAberto(false)}>
+          <img src="/assets/logo-canuma.png" alt="" width={900} height={175} />
+        </a>
+        <nav className="nav" id="menu-secoes" aria-label="Seções da página">
+          {SECOES.map((s) => (
+            <a key={s.id} href={`#${s.id}`} data-secao={s.id} onClick={() => setAberto(false)}>{s.nome}</a>
+          ))}
+        </nav>
+        <span className="topo-tk">CCME11 · B3</span>
+        <button className="menu-bt" type="button" aria-expanded={aberto} aria-controls="menu-secoes" aria-label={aberto ? "Fechar menu" : "Abrir menu"} onClick={() => setAberto((v) => !v)}>
+          <i /><i />
+        </button>
+      </div>
+    </header>
+  );
+}
+
 function Index() {
   const raiz = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -181,6 +220,7 @@ function Index() {
     if (!root) return;
     const hero = root.querySelector<HTMLElement>("[data-hero]");
     const alvos = Array.from(root.querySelectorAll<HTMLElement>("[data-scroll]"));
+    const links = Array.from(root.querySelectorAll<HTMLAnchorElement>(".nav a[data-secao]"));
     let raf = 0;
     const tick = () => {
       const vh = window.innerHeight;
@@ -194,12 +234,44 @@ function Index() {
         const p = Math.min(1, Math.max(0, (vh * 0.95 - r.top) / (vh * 0.6)));
         el.style.setProperty("--p", p.toFixed(4));
       }
+      // Marca na navbar a seção que está na tela.
+      let atual = "";
+      for (const s of SECOES) {
+        const el = document.getElementById(s.id);
+        if (el && el.getBoundingClientRect().top <= vh * 0.4) atual = s.id;
+      }
+      for (const a of links) {
+        if (a.dataset.secao === atual) a.setAttribute("aria-current", "true");
+        else a.removeAttribute("aria-current");
+      }
     };
     const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(tick); };
     tick();
     window.addEventListener("scroll", onScroll, { passive: true });
     window.addEventListener("resize", onScroll);
+
+    // Scroll suave (Lenis). Carregado só no navegador, para não quebrar o SSR.
+    // Os efeitos de rolagem são recalculados dentro do próprio quadro do Lenis.
+    let vivo = true;
+    let loop = 0;
+    let lenis: import("lenis").default | null = null;
+    void import("lenis").then(({ default: Lenis }) => {
+      if (!vivo) return;
+      // anchors: os links da navbar rolam suave; o espaço do cabeçalho fixo vem do scroll-margin-top das seções.
+      const l = new Lenis({ lerp: 0.085, smoothWheel: true, wheelMultiplier: 0.95, anchors: true });
+      l.on("scroll", tick);
+      const quadro = (t: number) => {
+        l.raf(t);
+        loop = requestAnimationFrame(quadro);
+      };
+      loop = requestAnimationFrame(quadro);
+      lenis = l;
+    });
+
     return () => {
+      vivo = false;
+      cancelAnimationFrame(loop);
+      lenis?.destroy();
       window.removeEventListener("scroll", onScroll);
       window.removeEventListener("resize", onScroll);
       cancelAnimationFrame(raf);
@@ -212,12 +284,7 @@ function Index() {
   return (
     <div className="lp" ref={raiz}>
       <div className="tarja" role="note">MATERIAL PUBLICITÁRIO</div>
-      <header className="topo">
-        <div className="wrap">
-          <img src="/assets/logo-canuma.png" alt="Canuma Capital" width={900} height={175} />
-          <span className="topo-tk">CCME11 · B3</span>
-        </div>
-      </header>
+      <Navbar />
 
       <main>
         {/* DOBRA 1 - ABERTURA */}
