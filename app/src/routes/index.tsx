@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useRef, useState, type CSSProperties } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type RefObject } from "react";
 
 export const Route = createFileRoute("/")({
   component: Index,
@@ -75,36 +75,51 @@ const SETORES = [
   { nome: "Logística", v: 1, txt: "1%", img: "logistica", ic: "logistica" },
 ];
 
+function rolarPara(pista: HTMLElement, item: HTMLElement, centro: boolean) {
+  const rp = pista.getBoundingClientRect();
+  const ri = item.getBoundingClientRect();
+  const alvo = pista.scrollLeft + (ri.left - rp.left) - (centro ? (rp.width - ri.width) / 2 : 0);
+  const max = pista.scrollWidth - pista.clientWidth;
+  pista.scrollTo({ left: Math.max(0, Math.min(max, alvo)), behavior: "smooth" });
+}
+
+function useIndiceAtivo(ref: RefObject<HTMLDivElement | null>, centro: boolean) {
+  const [estado, setEstado] = useState({ ativo: 0, inicio: true, fim: false });
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    let raf = 0;
+    const medir = () => {
+      const rp = el.getBoundingClientRect();
+      const ref0 = centro ? rp.left + rp.width / 2 : rp.left;
+      let melhor = 0, dist = Infinity;
+      Array.from(el.children).forEach((c, i) => {
+        const r = (c as HTMLElement).getBoundingClientRect();
+        const d = Math.abs((centro ? r.left + r.width / 2 : r.left) - ref0);
+        if (d < dist) { dist = d; melhor = i; }
+      });
+      const max = el.scrollWidth - el.clientWidth;
+      setEstado({ ativo: melhor, inicio: el.scrollLeft <= 2, fim: el.scrollLeft >= max - 2 });
+    };
+    const onScroll = () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(medir); };
+    medir();
+    el.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll);
+    return () => { el.removeEventListener("scroll", onScroll); window.removeEventListener("resize", onScroll); cancelAnimationFrame(raf); };
+  }, [ref, centro]);
+  return estado;
+}
+
 function CarrosselSetores() {
   const pista = useRef<HTMLDivElement>(null);
-  const [ativo, setAtivo] = useState(0);
+  const { ativo, inicio, fim } = useIndiceAtivo(pista, true);
   const ir = (i: number) => {
     const el = pista.current;
     if (!el) return;
     const n = Math.max(0, Math.min(SETORES.length - 1, i));
     const card = el.children[n] as HTMLElement | undefined;
-    if (card) el.scrollTo({ left: card.offsetLeft - (el.clientWidth - card.clientWidth) / 2, behavior: "smooth" });
+    if (card) rolarPara(el, card, true);
   };
-  useEffect(() => {
-    const el = pista.current;
-    if (!el) return;
-    let raf = 0;
-    const onScroll = () => {
-      cancelAnimationFrame(raf);
-      raf = requestAnimationFrame(() => {
-        const meio = el.scrollLeft + el.clientWidth / 2;
-        let melhor = 0, dist = Infinity;
-        Array.from(el.children).forEach((c, i) => {
-          const h = c as HTMLElement;
-          const d = Math.abs(h.offsetLeft + h.clientWidth / 2 - meio);
-          if (d < dist) { dist = d; melhor = i; }
-        });
-        setAtivo(melhor);
-      });
-    };
-    el.addEventListener("scroll", onScroll, { passive: true });
-    return () => { el.removeEventListener("scroll", onScroll); cancelAnimationFrame(raf); };
-  }, []);
   return (
     <div className="carrossel" role="region" aria-roledescription="carrossel" aria-label="Divisão setorial da carteira de CRIs">
       <div className="c-pista" ref={pista}>
@@ -122,13 +137,13 @@ function CarrosselSetores() {
         ))}
       </div>
       <div className="c-ctrl">
-        <button className="s" type="button" onClick={() => ir(ativo - 1)} aria-label="Setor anterior">←</button>
+        <button className="s" type="button" onClick={() => ir(ativo - 1)} disabled={inicio} aria-label="Setor anterior">←</button>
         <div className="pontos">
           {SETORES.map((s, i) => (
             <button key={s.nome} type="button" aria-label={`Ir para ${s.nome}`} aria-current={i === ativo} onClick={() => ir(i)} />
           ))}
         </div>
-        <button className="s" type="button" onClick={() => ir(ativo + 1)} aria-label="Próximo setor">→</button>
+        <button className="s" type="button" onClick={() => ir(ativo + 1)} disabled={fim} aria-label="Próximo setor">→</button>
       </div>
     </div>
   );
@@ -136,9 +151,12 @@ function CarrosselSetores() {
 
 function TrilhoFotos() {
   const ref = useRef<HTMLDivElement>(null);
+  const { ativo, inicio, fim } = useIndiceAtivo(ref, false);
   const mover = (dir: number) => {
     const el = ref.current;
-    if (el) el.scrollBy({ left: dir * el.clientWidth * 0.5, behavior: "smooth" });
+    if (!el) return;
+    const n = Math.max(0, Math.min(el.children.length - 1, ativo + dir));
+    rolarPara(el, el.children[n] as HTMLElement, false);
   };
   return (
     <div className="trilho-wrap">
@@ -148,8 +166,8 @@ function TrilhoFotos() {
         <figure><img src="/assets/setor-escritorios.webp" alt="Torres de escritórios" loading="lazy" /><figcaption>Escritórios</figcaption></figure>
         <figure><img src="/assets/setor-logistica.webp" alt="Galpão logístico" loading="lazy" /><figcaption>Logística</figcaption></figure>
       </div>
-      <button className="seta-nav esq" type="button" onClick={() => mover(-1)} aria-label="Fotos anteriores">←</button>
-      <button className="seta-nav dir" type="button" onClick={() => mover(1)} aria-label="Próximas fotos">→</button>
+      <button className="seta-nav esq" type="button" onClick={() => mover(-1)} disabled={inicio} aria-label="Fotos anteriores">←</button>
+      <button className="seta-nav dir" type="button" onClick={() => mover(1)} disabled={fim} aria-label="Próximas fotos">→</button>
     </div>
   );
 }
