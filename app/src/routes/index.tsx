@@ -113,6 +113,57 @@ function useIndiceAtivo(ref: RefObject<HTMLDivElement | null>, centro: boolean) 
   return estado;
 }
 
+// Auto-avanço dos carrosséis: anda sozinho enquanto estiver na tela; para quando a pessoa mexe
+// (toque, clique, arrasto, roda lateral, teclado, mouse em cima) e só volta depois de um tempo parado,
+// se o carrossel ainda estiver visível. Não anda com "reduzir movimento" ligado nem com a aba em segundo plano.
+function useAutoPlay(ref: RefObject<HTMLDivElement | null>, passo: () => void, intervaloMs: number, retomarMs = 6000) {
+  const passoRef = useRef(passo);
+  passoRef.current = passo;
+  useEffect(() => {
+    const pista = ref.current;
+    const caixa = pista?.parentElement;
+    if (!pista || !caixa) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let visivel = false;
+    let parado = false;
+    let retoma = 0;
+    const parar = () => { parado = true; window.clearTimeout(retoma); };
+    const voltarEm = (ms: number) => {
+      window.clearTimeout(retoma);
+      retoma = window.setTimeout(() => { parado = false; }, ms);
+    };
+    const mexeu = () => { parar(); voltarEm(retomarMs); };
+    const roda = (e: WheelEvent) => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) mexeu(); };
+    const entrou = (e: PointerEvent) => { if (e.pointerType === "mouse") parar(); };
+    const saiu = (e: PointerEvent) => { if (e.pointerType === "mouse") voltarEm(1500); };
+    const obs = new IntersectionObserver(([en]) => { visivel = en.isIntersecting; }, { threshold: 0.4 });
+    obs.observe(caixa);
+    caixa.addEventListener("pointerdown", mexeu);
+    caixa.addEventListener("touchstart", mexeu, { passive: true });
+    caixa.addEventListener("keydown", mexeu);
+    caixa.addEventListener("wheel", roda, { passive: true });
+    caixa.addEventListener("pointerenter", entrou);
+    caixa.addEventListener("pointerleave", saiu);
+    caixa.addEventListener("focusin", parar);
+    caixa.addEventListener("focusout", () => voltarEm(retomarMs));
+    const relogio = window.setInterval(() => {
+      if (visivel && !parado && !document.hidden) passoRef.current();
+    }, intervaloMs);
+    return () => {
+      window.clearInterval(relogio);
+      window.clearTimeout(retoma);
+      obs.disconnect();
+      caixa.removeEventListener("pointerdown", mexeu);
+      caixa.removeEventListener("touchstart", mexeu);
+      caixa.removeEventListener("keydown", mexeu);
+      caixa.removeEventListener("wheel", roda);
+      caixa.removeEventListener("pointerenter", entrou);
+      caixa.removeEventListener("pointerleave", saiu);
+      caixa.removeEventListener("focusin", parar);
+    };
+  }, [ref, intervaloMs, retomarMs]);
+}
+
 function CarrosselSetores() {
   const pista = useRef<HTMLDivElement>(null);
   const { ativo, inicio, fim } = useIndiceAtivo(pista, true);
@@ -123,6 +174,7 @@ function CarrosselSetores() {
     const card = el.children[n] as HTMLElement | undefined;
     if (card) rolarPara(el, card, true);
   };
+  useAutoPlay(pista, () => ir(ativo >= SETORES.length - 1 ? 0 : ativo + 1), 4200);
   return (
     <div className="carrossel" role="region" aria-roledescription="carrossel" aria-label="Divisão setorial da carteira de CRIs">
       <div className="c-pista" ref={pista}>
@@ -161,6 +213,12 @@ function TrilhoFotos() {
     const n = Math.max(0, Math.min(el.children.length - 1, ativo + dir));
     rolarPara(el, el.children[n] as HTMLElement, false);
   };
+  useAutoPlay(ref, () => {
+    const el = ref.current;
+    if (!el) return;
+    if (fim) rolarPara(el, el.children[0] as HTMLElement, false);
+    else mover(1);
+  }, 3600);
   return (
     <div className="trilho-wrap">
       <div className="trilho" ref={ref}>
@@ -204,13 +262,60 @@ function Navbar() {
           {SECOES.map((s) => (
             <a key={s.id} href={`#${s.id}`} data-secao={s.id} onClick={() => setAberto(false)}>{s.nome}</a>
           ))}
+          <a className="nav-cta" href={LINK} data-link="a definir" onClick={() => setAberto(false)}>Acessar a página <i aria-hidden="true">→</i></a>
         </nav>
-        <span className="topo-tk">CCME11 · B3</span>
+        <a className="topo-cta" href={LINK} data-link="a definir">Acessar a página <i aria-hidden="true">→</i></a>
         <button className="menu-bt" type="button" aria-expanded={aberto} aria-controls="menu-secoes" aria-label={aberto ? "Fechar menu" : "Abrir menu"} onClick={() => setAberto((v) => !v)}>
           <i /><i />
         </button>
       </div>
     </header>
+  );
+}
+
+// Simulação do documento: R$ 0,086 por cota ao mês.
+const SIM = [
+  { c: "100", v: "R$ 8,60" },
+  { c: "1.000", v: "R$ 86,00" },
+  { c: "10.000", v: "R$ 860,00" },
+];
+
+// Celular 3D feito só de CSS: gira com a rolagem (--c) e a tela troca a simulação (data-step).
+function FoneRendimento() {
+  return (
+    <div className="cena-fone" aria-hidden="true">
+      <div className="fone">
+        {Array.from({ length: 11 }, (_, i) => (
+          <i className="fone-cam" key={i} style={{ transform: `translateZ(${-(i + 1) * 2.2}px)` }} />
+        ))}
+        <span className="fone-botoes" />
+        <div className="fone-frente">
+          <div className="fone-tela">
+            <span className="fone-ilha" />
+            <div className="fone-app">
+              <span className="fone-marca">CCME11</span>
+              <span className="fone-rot">RENDIMENTO MENSAL</span>
+              <b className="fone-num"><small>R$</small>0,086</b>
+              <span className="fone-sub">por cota ao mês</span>
+              <div className="fone-sim">
+                <span className="fone-sim-t">SIMULAÇÃO</span>
+                <div className="fone-passos">
+                  {SIM.map((l) => (
+                    <div className="fone-passo" key={l.c}>
+                      <em>{l.c} cotas</em>
+                      <b>{l.v}</b>
+                      <span>rendimento mensal</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="fone-barras"><i /><i /><i /></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <span className="fone-sombra" />
+    </div>
   );
 }
 
@@ -224,6 +329,7 @@ function Index() {
     const hero = root.querySelector<HTMLElement>("[data-hero]");
     const alvos = Array.from(root.querySelectorAll<HTMLElement>("[data-scroll]"));
     const links = Array.from(root.querySelectorAll<HTMLAnchorElement>(".nav a[data-secao]"));
+    const cenas = Array.from(root.querySelectorAll<HTMLElement>("[data-cena]"));
     let raf = 0;
     const tick = () => {
       const vh = window.innerHeight;
@@ -236,6 +342,21 @@ function Index() {
         const r = el.getBoundingClientRect();
         const p = Math.min(1, Math.max(0, (vh * 0.95 - r.top) / (vh * 0.6)));
         el.style.setProperty("--p", p.toFixed(4));
+      }
+      // Celular 3D: progresso 0..1 da cena (fixa na tela no desktop, passando pela tela no celular).
+      for (const el of cenas) {
+        const r = el.getBoundingClientRect();
+        const palco = el.firstElementChild as HTMLElement | null;
+        let c: number;
+        if (palco && getComputedStyle(palco).position === "sticky") {
+          const topo = parseFloat(getComputedStyle(palco).top) || 0;
+          c = (topo - r.top) / Math.max(1, r.height - palco.offsetHeight);
+        } else {
+          c = (vh - r.top) / (vh + r.height);
+        }
+        c = Math.min(1, Math.max(0, (c - 0.06) / 0.88));
+        el.style.setProperty("--c", c.toFixed(4));
+        el.dataset.step = c < 0.34 ? "0" : c < 0.67 ? "1" : "2";
       }
       // Marca na navbar a seção que está na tela.
       let atual = "";
@@ -357,7 +478,7 @@ function Index() {
             </div>
             <p className="fonte" style={{ marginTop: 14 }}>Fonte: Informes mensais do CCME11 à CVM, abr/2022 a set/2026</p>
             <p className="txt" style={{ margin: "30px 0 32px", fontSize: 18, color: "#0D233F" }}>Hoje o fundo soma cerca de R$ 714 milhões em patrimônio líquido, valor patrimonial de aproximadamente R$ 10,54 por cota e mais de 9 mil cotistas.</p>
-            <a className="b-contorno" href={LINK} data-link="a definir">{CTA} <span aria-hidden="true">→</span></a>
+            <div className="cta-centro"><a className="b-contorno" href={LINK} data-link="a definir">{CTA} <span aria-hidden="true">→</span></a></div>
           </div>
         </section>
 
@@ -382,40 +503,30 @@ function Index() {
               <p className="fonte">Fonte: Relatório Gerencial CCME11, Outubro/2026. Retorno total (variação da cota patrimonial + dividendos distribuídos) de 28/10/2022 a 30/09/2026.</p>
             </div>
 
-            <div className="rend">
-              <div>
-                <span className="rot">RENDIMENTO MENSAL</span>
-                <h3 className="tt" style={{ fontSize: "clamp(26px,3vw,38px)", marginTop: 10 }}>R$ 0,086 por cota <em>ao mês</em></h3>
-                <p className="txt" style={{ marginTop: 18 }}>O CCME11 distribui R$ 0,086 por cota ao mês. A gestora projeta distribuição entre R$ 0,084 e R$ 0,088 por cota por mês de outubro a dezembro de 2026, com cenário base de R$ 0,086, e o fundo mantém reserva acumulada de cerca de R$ 0,082 por cota. Nos últimos 12 meses, o dividend yield foi de 12,1%.</p>
-                <p className="fonte" style={{ marginTop: 12 }}>Fonte: Relatório Gerencial CCME11, Outubro/2026; dividend yield anualizado com cota de mercado de 11/11/2026</p>
-                <h4 style={{ margin: "40px 0 0", fontSize: 13, letterSpacing: ".06em", textTransform: "uppercase" }}>Simulação com o rendimento mensal</h4>
-                <ol className="passos" data-scroll>
-                  {[
-                    { c: "100", v: "R$ 8,60" },
-                    { c: "1.000", v: "R$ 86,00" },
-                    { c: "10.000", v: "R$ 860,00" },
-                  ].map((l, i) => (
-                    <li className="surge" style={vi(i)} key={l.c}>
-                      <span className="n" aria-hidden="true">{i + 1}</span>
-                      <span className="c">Cotas<b>{l.c}</b></span>
-                      <span className="v"><small>Rendimento mensal</small>{l.v}</span>
-                    </li>
-                  ))}
-                </ol>
-                <p className="fonte" style={{ margin: "14px 0 30px" }}>Simulação matemática com base em R$ 0,086 por cota, não é garantia de rendimentos futuros.</p>
-                <a className="b-seta" href={LINK} data-link="a definir"><i aria-hidden="true">→</i>{CTA}</a>
-              </div>
-              <div data-scroll>
-                <div className="mao">
-                  <img src={a("assets/celular.webp")} alt="" width={700} height={946} loading="lazy" />
-                  <div className="tela" aria-hidden="true">
-                    <span>RENDIMENTO MENSAL</span>
-                    <b>0,086</b>
-                    <small>R$ por cota ao mês</small>
-                    <i>CCME11</i>
-                  </div>
+            <div className="cena" data-cena data-step="0">
+              <div className="cena-palco">
+                <div className="cena-txt">
+                  <span className="rot">RENDIMENTO MENSAL</span>
+                  <h3 className="tt" style={{ fontSize: "clamp(26px,3vw,38px)", marginTop: 10 }}>R$ 0,086 por cota <em>ao mês</em></h3>
+                  <p className="txt" style={{ marginTop: 18 }}>O CCME11 distribui R$ 0,086 por cota ao mês. A gestora projeta distribuição entre R$ 0,084 e R$ 0,088 por cota por mês de outubro a dezembro de 2026, com cenário base de R$ 0,086, e o fundo mantém reserva acumulada de cerca de R$ 0,082 por cota. Nos últimos 12 meses, o dividend yield foi de 12,1%.</p>
+                  <p className="fonte" style={{ marginTop: 12 }}>Fonte: Relatório Gerencial CCME11, Outubro/2026; dividend yield anualizado com cota de mercado de 11/11/2026</p>
+                  <h4 style={{ margin: "40px 0 0", fontSize: 13, letterSpacing: ".06em", textTransform: "uppercase" }}>Simulação com o rendimento mensal</h4>
+                  <ol className="passos">
+                    {SIM.map((l, i) => (
+                      <li key={l.c}>
+                        <span className="n" aria-hidden="true">{i + 1}</span>
+                        <span className="c">Cotas<b>{l.c}</b></span>
+                        <span className="v"><small>Rendimento mensal</small>{l.v}</span>
+                      </li>
+                    ))}
+                  </ol>
+                  <p className="fonte" style={{ margin: "14px 0 0" }}>Simulação matemática com base em R$ 0,086 por cota, não é garantia de rendimentos futuros.</p>
                 </div>
+                <FoneRendimento />
               </div>
+            </div>
+            <div className="cta-centro" style={{ marginTop: 56 }}>
+              <a className="b-seta" href={LINK} data-link="a definir"><i aria-hidden="true">→</i>{CTA}</a>
             </div>
           </div>
         </section>
@@ -423,7 +534,7 @@ function Index() {
         {/* DOBRA 4 - CONHEÇA A CARTEIRA */}
         <section className="sec" id="carteira">
           <div className="wrap">
-            <h2 className="tt">Conheça os ativos <em>do CCME11</em></h2>
+            <h2 className="tt" style={{ textAlign: "center" }}>Conheça os ativos <em>do CCME11</em></h2>
             <div className="painel" data-scroll>
               <div className="painel-donut"><Donut /></div>
               <div className="classes">
@@ -447,7 +558,7 @@ function Index() {
               </div>
               <div className="pvp"><span>P/VP</span><b>0,81x</b></div>
             </div>
-            <div style={{ marginTop: 40 }}>
+            <div className="cta-centro" style={{ marginTop: 40 }}>
               <a className="b-cheio" href={LINK} data-link="a definir">{CTA} <span aria-hidden="true">→</span></a>
             </div>
           </div>
@@ -493,7 +604,7 @@ function Index() {
           {/* DOBRA 7 - DIFERENCIAIS */}
           <section className="sec" id="diferenciais" style={{ paddingTop: 40 }}>
             <div className="wrap">
-              <h2 className="tt">Por que o <em>CCME11</em></h2>
+              <h2 className="tt" style={{ textAlign: "center" }}>Por que o <em>CCME11</em></h2>
               <div className="caixa" data-scroll>
                 {[
                   { ic: "grafico", t: "Gestão Ativa", p: "A Canuma Capital ajusta a carteira conforme o ciclo do mercado imobiliário." },
@@ -510,10 +621,10 @@ function Index() {
                   </article>
                 ))}
               </div>
-              <div style={{ margin: "40px 0 22px" }}>
+              <div className="cta-centro" style={{ margin: "40px 0 22px" }}>
                 <a className="b-gradiente" href={LINK} data-link="a definir">{CTA} <span aria-hidden="true">→</span></a>
               </div>
-              <p className="fonte">Fonte: Relatório Gerencial CCME11, Outubro/2026; Desconto com base no P/VP na cotação de 11/11/2026</p>
+              <p className="fonte" style={{ margin: "0 auto", textAlign: "center" }}>Fonte: Relatório Gerencial CCME11, Outubro/2026; Desconto com base no P/VP na cotação de 11/11/2026</p>
             </div>
           </section>
 
