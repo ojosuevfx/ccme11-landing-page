@@ -335,7 +335,11 @@ function Index() {
       const vh = window.innerHeight;
       if (hero) {
         const r = hero.getBoundingClientRect();
-        const p = Math.min(1, Math.max(0, -r.top / Math.max(1, r.height - vh)));
+        // progresso da rolagem do topo: começa quando o palco gruda logo abaixo da navbar
+        const palco = hero.firstElementChild as HTMLElement | null;
+        const topo = palco ? parseFloat(getComputedStyle(palco).top) || 0 : 0;
+        const dist = palco ? r.height - palco.offsetHeight : r.height - vh;
+        const p = Math.min(1, Math.max(0, (topo - r.top) / Math.max(1, dist)));
         hero.style.setProperty("--h", p.toFixed(4));
       }
       for (const el of alvos) {
