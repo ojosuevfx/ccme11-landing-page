@@ -6,7 +6,7 @@ export const Route = createFileRoute("/")({
 });
 
 // Destino dos botões: a definir (documento CCME11_Pagina_AlwaysOn).
-const LINK = "#";
+const LINK = "https://www.ccme11.com.br/";
 const CTA = "Clique aqui para ter mais informações";
 const vi = (i: number) => ({ "--i": i }) as CSSProperties;
 // Base do endereço: "/" no Higgsfield, "/ccme11-landing-page/" no GitHub Pages.
