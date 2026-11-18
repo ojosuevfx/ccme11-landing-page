@@ -88,6 +88,13 @@ section[id]{scroll-margin-top:calc(var(--tarja) + 64px + 8px)}
 /* janelas baixas: o texto ocupa mais da área, então as letras descem */
 @media (max-height:780px){.letras{top:62%}}
 @media (max-width:760px){.letras{top:63%}}
+/* desktop: os prédios ocupam só a área abaixo do texto, sem subir por baixo do parágrafo e do botão */
+@media (min-width:761px){
+  .hero-txt{padding-top:3vh}
+  .hero h1{margin-bottom:12px}
+  .selo{margin-bottom:14px}
+  .predios{width:auto;height:clamp(140px,calc(100dvh - var(--tarja) - 64px - 440px),62dvh);max-width:104vw}
+}
 .palco:after{content:"";position:absolute;left:0;right:0;bottom:0;height:22%;background:linear-gradient(0deg,#fff 0,rgba(255,255,255,.7) 35%,transparent);z-index:3;pointer-events:none}
 /* CTAs bespoke */
 .b-hero{display:inline-flex;align-items:center;gap:14px;background:linear-gradient(90deg,#A9CBEA,#DCEBFF);color:var(--tinta);font-weight:600;font-size:14px;padding:8px 8px 8px 24px;border-radius:999px;text-decoration:none;box-shadow:0 10px 30px -10px rgba(55,135,189,.55);transition:box-shadow .3s,transform .2s}
